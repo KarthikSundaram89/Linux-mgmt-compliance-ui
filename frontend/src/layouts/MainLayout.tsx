@@ -43,7 +43,9 @@ const navItems = [
   { label: 'Changes', path: '/changes', icon: <ChangeCircle /> },
   { label: 'Reports', path: '/reports', icon: <Assessment /> },
   { label: 'Settings', path: '/settings', icon: <Settings /> },
+  { label: 'Users', path: '/admin/users', icon: <Security /> },
   { label: 'Audit Logs', path: '/audit-logs', icon: <Security /> },
+  { label: 'System', path: '/system', icon: <Settings /> },
 ];
 
 const MainLayout: React.FC = () => {

@@ -21,6 +21,11 @@ from backend.api.v1.endpoints import (
     audit_logs,
     dashboard,
     health,
+    search,
+    bulk,
+    snapshots,
+    system,
+    users,
 )
 
 api_router = APIRouter()
@@ -107,4 +112,39 @@ api_router.include_router(
     audit_logs.router,
     prefix="/audit-logs",
     tags=["Audit Logs"],
+)
+
+# Search
+api_router.include_router(
+    search.router,
+    prefix="/search",
+    tags=["Search"],
+)
+
+# Bulk Operations
+api_router.include_router(
+    bulk.router,
+    prefix="/bulk",
+    tags=["Bulk Operations"],
+)
+
+# Snapshots
+api_router.include_router(
+    snapshots.router,
+    prefix="/snapshots",
+    tags=["Snapshots"],
+)
+
+# System Status
+api_router.include_router(
+    system.router,
+    prefix="/system",
+    tags=["System"],
+)
+
+# User Management
+api_router.include_router(
+    users.router,
+    prefix="/users",
+    tags=["Users"],
 )

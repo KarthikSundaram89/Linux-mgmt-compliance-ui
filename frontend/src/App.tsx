@@ -1,6 +1,5 @@
 /**
- * Root application component.
- * Sets up routing and the main layout structure.
+ * Root application component with complete routing.
  */
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
@@ -16,6 +15,9 @@ import ChangesPage from './pages/ChangesPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
 import AuditLogsPage from './pages/AuditLogsPage';
+import AdminUsersPage from './pages/AdminUsersPage';
+import SystemStatusPage from './pages/SystemStatusPage';
+import SnapshotComparisonPage from './pages/SnapshotComparisonPage';
 import NotFoundPage from './pages/NotFoundPage';
 import { useAuth } from './hooks/useAuth';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -26,27 +28,26 @@ const App: React.FC = () => {
   return (
     <SnackbarProvider maxSnack={3} anchorOrigin={{ vertical: 'top', horizontal: 'right' }}>
       <Routes>
-        {/* Public routes */}
-        <Route
-          path="/login"
-          element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />}
-        />
+        {/* Public */}
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <LoginPage />} />
 
-        {/* Protected routes */}
+        {/* Protected */}
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/servers" element={<ServersPage />} />
             <Route path="/servers/:id" element={<ServerDetailPage />} />
+            <Route path="/servers/:id/compare" element={<SnapshotComparisonPage />} />
             <Route path="/collections" element={<CollectionsPage />} />
             <Route path="/changes" element={<ChangesPage />} />
             <Route path="/reports" element={<ReportsPage />} />
             <Route path="/settings" element={<SettingsPage />} />
             <Route path="/audit-logs" element={<AuditLogsPage />} />
+            <Route path="/admin/users" element={<AdminUsersPage />} />
+            <Route path="/system" element={<SystemStatusPage />} />
           </Route>
         </Route>
 
-        {/* Catch-all */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </SnackbarProvider>
