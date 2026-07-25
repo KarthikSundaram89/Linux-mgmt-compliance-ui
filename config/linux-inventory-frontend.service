@@ -1,0 +1,30 @@
+# ==============================================================================
+# Systemd Service - Linux Inventory Manager Frontend (Nginx)
+# ==============================================================================
+# Serves the built React frontend via Nginx.
+# Place this file at /etc/systemd/system/linux-inventory-frontend.service
+#
+# Alternative: Use the Nginx system service with a custom site config.
+# This service file is for a dedicated Nginx instance serving the frontend.
+#
+# Enable and start:
+#   sudo systemctl enable linux-inventory-frontend
+#   sudo systemctl start linux-inventory-frontend
+
+[Unit]
+Description=Linux Inventory Manager - Frontend (Nginx)
+Documentation=https://github.com/KarthikSundaram89/Linux-mgmt-compliance-ui
+After=network.target linux-inventory-backend.service
+
+[Service]
+Type=forking
+PIDFile=/run/linux-inventory-nginx.pid
+ExecStartPre=/usr/sbin/nginx -t -c /opt/linux-inventory-manager/config/nginx.conf
+ExecStart=/usr/sbin/nginx -c /opt/linux-inventory-manager/config/nginx.conf
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s QUIT $MAINPID
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,64 @@
+# ==============================================================================
+# Systemd Service - Linux Inventory Manager Backend
+# ==============================================================================
+# Place this file at /etc/systemd/system/linux-inventory-backend.service
+#
+# Enable and start:
+#   sudo systemctl enable linux-inventory-backend
+#   sudo systemctl start linux-inventory-backend
+#
+# View logs:
+#   sudo journalctl -u linux-inventory-backend -f
+
+[Unit]
+Description=Linux Inventory Manager - Backend API
+Documentation=https://github.com/KarthikSundaram89/Linux-mgmt-compliance-ui
+After=network.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+User=linuxinventory
+Group=linuxinventory
+WorkingDirectory=/opt/linux-inventory-manager
+EnvironmentFile=/opt/linux-inventory-manager/config/.env
+
+# Start the application with Uvicorn
+ExecStart=/opt/linux-inventory-manager/venv/bin/uvicorn \
+    backend.main:app \
+    --host 0.0.0.0 \
+    --port 8000 \
+    --workers 4 \
+    --log-level info \
+    --access-log
+
+# Restart policy
+Restart=always
+RestartSec=10
+StartLimitInterval=300
+StartLimitBurst=5
+
+# Security hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/linux-inventory-manager/storage
+ReadWritePaths=/opt/linux-inventory-manager/logs
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+SystemCallFilter=@system-service
+MemoryDenyWriteExecute=true
+
+# Resource limits
+LimitNOFILE=65535
+LimitNPROC=4096
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=linux-inventory
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,56 @@
+# ==============================================================================
+# Git Ignore - Linux Inventory Manager
+# ==============================================================================
+
+# ─── Python ──────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+.env
+*.egg-info/
+dist/
+build/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+.coverage
+
+# ─── Node/Frontend ───────────────────────────────────────────────────────────
+node_modules/
+frontend/dist/
+frontend/node_modules/
+.npm
+
+# ─── IDE ─────────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ─── Application Data ────────────────────────────────────────────────────────
+storage/
+logs/
+reports/
+exports/
+*.db
+*.sqlite
+*.sqlite3
+
+# ─── Secrets ─────────────────────────────────────────────────────────────────
+.secrets/
+*.pem
+*.key
+.env
+.env.local
+.env.production
+
+# ─── OS ──────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
