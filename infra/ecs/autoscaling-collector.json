@@ -1,0 +1,38 @@
+{
+  "_description": "Auto-scaling policy for collector workers based on SQS queue depth",
+  "scalableTarget": {
+    "serviceNamespace": "ecs",
+    "resourceId": "service/${CLUSTER_NAME}/linux-inventory-collector",
+    "scalableDimension": "ecs:service:DesiredCount",
+    "minCapacity": 1,
+    "maxCapacity": 5
+  },
+  "scalingPolicy": {
+    "policyName": "collector-queue-depth-scaling",
+    "policyType": "TargetTrackingScaling",
+    "targetTrackingScalingPolicyConfiguration": {
+      "targetValue": 10,
+      "customizedMetricSpecification": {
+        "metricName": "ApproximateNumberOfMessagesVisible",
+        "namespace": "AWS/SQS",
+        "dimensions": [
+          {
+            "name": "QueueName",
+            "value": "linux-inventory-collections"
+          }
+        ],
+        "statistic": "Average"
+      },
+      "scaleInCooldown": 300,
+      "scaleOutCooldown": 60
+    }
+  },
+  "_notes": [
+    "Scales out when queue depth exceeds ~10 messages per task",
+    "Scale-in cooldown 5 min to prevent flapping",
+    "Scale-out cooldown 60s for rapid response",
+    "Max 5 tasks = 100 concurrent SSH sessions (5 x 20)",
+    "For 300 servers, 1 task handles daily collection",
+    "For 2000+ servers, auto-scales to 3-5 tasks"
+  ]
+}

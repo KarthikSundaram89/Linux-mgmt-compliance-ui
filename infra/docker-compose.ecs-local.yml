@@ -1,0 +1,159 @@
+# ==============================================================================
+# Docker Compose - Local ECS Development Environment
+# ==============================================================================
+# Simulates the ECS Fargate architecture locally:
+# - API container (FastAPI + frontend)
+# - Collector worker container (SQS consumer)
+# - LocalStack (SQS emulation)
+# - PostgreSQL (replaces SQLite)
+# - Shared volume (simulates EFS)
+#
+# Usage: docker compose -f infra/docker-compose.ecs-local.yml up
+# ==============================================================================
+
+version: "3.9"
+
+services:
+  # ─── PostgreSQL (replaces SQLite for multi-container) ──────────────────────
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: linuxinventory
+      POSTGRES_USER: linuxinv
+      POSTGRES_PASSWORD: localdev123
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U linuxinv -d linuxinventory"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ─── LocalStack (SQS emulation) ────────────────────────────────────────────
+  localstack:
+    image: localstack/localstack:3
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: sqs
+      DEFAULT_REGION: us-east-1
+    volumes:
+      - localstack_data:/var/lib/localstack
+
+  # ─── Queue Setup (creates SQS queue on startup) ────────────────────────────
+  queue-setup:
+    image: amazon/aws-cli:2.15.0
+    depends_on:
+      localstack:
+        condition: service_started
+    entrypoint: /bin/sh
+    command: >
+      -c "sleep 5 &&
+      aws --endpoint-url=http://localstack:4566 sqs create-queue
+        --queue-name linux-inventory-collections
+        --attributes '{\"VisibilityTimeout\":\"300\",\"MessageRetentionPeriod\":\"86400\"}' &&
+      echo 'Queue created successfully'"
+    environment:
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
+      AWS_DEFAULT_REGION: us-east-1
+
+  # ─── API Container ─────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ../
+      dockerfile: infra/ecs/Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - DATABASE_URL=postgresql+asyncpg://linuxinv:localdev123@postgres:5432/linuxinventory
+      - SECRET_KEY=local-dev-secret-key-not-for-production
+      - SECRETS_PROVIDER=local
+      - LOG_LEVEL=DEBUG
+      - LOG_FORMAT=text
+      - SCHEDULER_ENABLED=true
+      - SQS_QUEUE_URL=http://localstack:4566/000000000000/linux-inventory-collections
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - CORS_ORIGINS=["http://localhost:3000","http://localhost:8000"]
+      - STORAGE_BASE_PATH=/app/storage
+      - SNAPSHOTS_PATH=/app/storage/snapshots
+      - REPORTS_PATH=/app/storage/reports
+    volumes:
+      - shared_storage:/app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v1/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ─── Collector Worker Container ─────────────────────────────────────────────
+  collector:
+    build:
+      context: ../
+      dockerfile: infra/ecs/Dockerfile.collector
+    environment:
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - DATABASE_URL=postgresql+asyncpg://linuxinv:localdev123@postgres:5432/linuxinventory
+      - SECRETS_PROVIDER=local
+      - LOG_LEVEL=DEBUG
+      - LOG_FORMAT=text
+      - SQS_QUEUE_URL=http://localstack:4566/000000000000/linux-inventory-collections
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      - SCHEDULER_MAX_CONCURRENT_COLLECTIONS=5
+      - STORAGE_BASE_PATH=/app/storage
+      - SNAPSHOTS_PATH=/app/storage/snapshots
+    volumes:
+      - shared_storage:/app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      localstack:
+        condition: service_started
+      queue-setup:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8001/health || exit 1"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # ─── Frontend Dev Server (hot reload) ───────────────────────────────────────
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ../frontend:/app
+      - frontend_node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - api
+
+volumes:
+  pgdata:
+  localstack_data:
+  shared_storage:
+  frontend_node_modules:
