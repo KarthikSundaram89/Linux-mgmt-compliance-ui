@@ -1,0 +1,94 @@
+{
+  "_metadata": {
+    "server_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "hostname": "web-prod-01",
+    "collected_at": "2026-07-25T02:15:30+00:00",
+    "snapshot_version": "2.0",
+    "distro": "rhel",
+    "distro_version": "8.9",
+    "pretty_name": "Red Hat Enterprise Linux 8.9 (Ootpa)",
+    "collectors_run": ["operating_system", "users", "groups", "sudo", "password_policy", "filesystem", "packages", "services", "chrony", "network", "ssh_config", "cron"],
+    "collectors_succeeded": ["operating_system", "users", "groups", "sudo", "password_policy", "filesystem", "packages", "services", "chrony", "network", "ssh_config", "cron"],
+    "collectors_failed": [],
+    "total_duration_seconds": 12.45,
+    "total_commands_run": 38,
+    "triggered_by": "scheduler"
+  },
+  "_summary": {
+    "total_collectors": 12,
+    "successful": 12,
+    "failed": 0,
+    "warnings": 2
+  },
+  "operating_system": {
+    "data": {
+      "hostname": "web-prod-01",
+      "fqdn": "web-prod-01.us-east-1.internal",
+      "distribution": "rhel",
+      "distribution_version": "8.9",
+      "pretty_name": "Red Hat Enterprise Linux 8.9 (Ootpa)",
+      "kernel_release": "4.18.0-513.24.1.el8_9.x86_64",
+      "machine_type": "x86_64",
+      "virtualization_type": "kvm",
+      "virtualization_vendor": "Amazon EC2",
+      "timezone": "America/New_York",
+      "current_time": "2026-07-25T02:15:30-0400",
+      "last_boot_time": "2026-07-01 03:15:22",
+      "uptime_seconds": 2073930.0,
+      "reboot_pending": false
+    },
+    "success": true,
+    "duration_seconds": 1.2,
+    "commands_run": 12,
+    "warnings": [],
+    "errors": []
+  },
+  "users": {
+    "data": {
+      "users": [
+        {"username": "root", "uid": 0, "primary_group": "root", "secondary_groups": [], "home_directory": "/root", "login_shell": "/bin/bash", "account_locked": false, "ssh_authorized_keys_present": true},
+        {"username": "jdoe", "uid": 1001, "primary_group": "jdoe", "secondary_groups": ["wheel", "docker"], "home_directory": "/home/jdoe", "login_shell": "/bin/bash", "account_locked": false, "ssh_authorized_keys_present": true},
+        {"username": "asmith", "uid": 1002, "primary_group": "asmith", "secondary_groups": ["users"], "home_directory": "/home/asmith", "login_shell": "/bin/bash", "account_locked": false, "ssh_authorized_keys_present": true}
+      ],
+      "total_count": 3
+    },
+    "success": true,
+    "duration_seconds": 1.8,
+    "commands_run": 5,
+    "warnings": [],
+    "errors": []
+  },
+  "packages": {
+    "data": {
+      "packages": [
+        {"name": "bash", "version": "5.1.8", "release": "1.el8", "architecture": "x86_64"},
+        {"name": "openssl", "version": "3.0.7", "release": "20.el8", "architecture": "x86_64"},
+        {"name": "kernel", "version": "4.18.0", "release": "513.24.1.el8_9", "architecture": "x86_64"}
+      ],
+      "total_count": 856,
+      "package_manager": "rpm"
+    },
+    "success": true,
+    "duration_seconds": 3.5,
+    "commands_run": 1,
+    "warnings": [],
+    "errors": []
+  },
+  "services": {
+    "data": {
+      "services": [
+        {"name": "sshd.service", "active_state": "active", "sub_state": "running", "enabled": "enabled", "is_failed": false},
+        {"name": "chronyd.service", "active_state": "active", "sub_state": "running", "enabled": "enabled", "is_failed": false},
+        {"name": "httpd.service", "active_state": "active", "sub_state": "running", "enabled": "enabled", "is_failed": false}
+      ],
+      "total_count": 142,
+      "running_count": 38,
+      "failed_count": 0
+    },
+    "success": true,
+    "duration_seconds": 0.8,
+    "commands_run": 2,
+    "warnings": [],
+    "errors": []
+  }
+}

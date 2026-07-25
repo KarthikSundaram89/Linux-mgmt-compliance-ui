@@ -1,0 +1,49 @@
+{
+  "server": "web-prod-01",
+  "server_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "detected_at": "2026-07-25T02:15:30+00:00",
+  "total_changes": 5,
+  "summary": "Detected 5 change(s):\n\n  [OPERATING_SYSTEM] (1 changes)\n    [WARNING] kernel_changed: kernel_release\n\n  [PACKAGES] (2 changes)\n    [INFO] upgraded: openssl\n    [INFO] installed: nginx\n\n  [SERVICES] (1 changes)\n    [CRITICAL] failed: httpd.service\n\n  [USERS] (1 changes)\n    [WARNING] added: newdeploy",
+  "changes": [
+    {
+      "category": "operating_system",
+      "change_type": "kernel_changed",
+      "field_name": "kernel_release",
+      "old_value": "4.18.0-477.el8",
+      "new_value": "4.18.0-513.24.1.el8_9",
+      "severity": "warning"
+    },
+    {
+      "category": "packages",
+      "change_type": "upgraded",
+      "field_name": "openssl",
+      "old_value": "3.0.6",
+      "new_value": "3.0.7",
+      "severity": "info"
+    },
+    {
+      "category": "packages",
+      "change_type": "installed",
+      "field_name": "nginx",
+      "old_value": null,
+      "new_value": "1.24.0",
+      "severity": "info"
+    },
+    {
+      "category": "services",
+      "change_type": "failed",
+      "field_name": "httpd.service",
+      "old_value": "active",
+      "new_value": "failed",
+      "severity": "critical"
+    },
+    {
+      "category": "users",
+      "change_type": "added",
+      "field_name": "newdeploy",
+      "old_value": null,
+      "new_value": "UID=1003",
+      "severity": "warning"
+    }
+  ]
+}
