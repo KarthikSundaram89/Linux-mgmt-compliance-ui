@@ -1,0 +1,61 @@
+# ==============================================================================
+# Pre-commit hooks for code quality and security
+# Install: pip install pre-commit && pre-commit install
+# ==============================================================================
+
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-added-large-files
+        args: ['--maxkb=1000']
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: no-commit-to-branch
+        args: ['--branch', 'main']
+
+  # Python linting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.2.1
+    hooks:
+      - id: ruff
+        args: ['--fix']
+      - id: ruff-format
+
+  # Python type checking
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        additional_dependencies: ['types-all']
+        args: ['--ignore-missing-imports']
+
+  # Security scanning
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.7
+    hooks:
+      - id: bandit
+        args: ['-c', 'pyproject.toml', '-r', 'backend/']
+        additional_dependencies: ['bandit[toml]']
+
+  # Secrets detection
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.1
+    hooks:
+      - id: gitleaks
+
+  # Frontend linting
+  - repo: local
+    hooks:
+      - id: frontend-lint
+        name: Frontend TypeScript lint
+        entry: bash -c 'cd frontend && npx eslint src --ext .ts,.tsx --max-warnings 0'
+        language: system
+        files: '^frontend/src/.*\.(ts|tsx)$'
+        pass_filenames: false
