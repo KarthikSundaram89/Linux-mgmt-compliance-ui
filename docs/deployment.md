@@ -2,6 +2,26 @@
 
 ## Production Deployment on EC2
 
+### Architecture
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│            EC2 Instance (Amazon Linux 2023)                    │
+│            t3.medium · 2 vCPU · 4 GB RAM · 100 GB gp3        │
+│                                                               │
+│    Nginx (:443) → Uvicorn (:8000) → SSH → Linux Servers      │
+│                                                               │
+│    SQLite (metadata) + Filesystem (compressed snapshots)      │
+└──────────────────────────────────────────────────────────────┘
+
+AWS Services:
+  • EC2 — runs the application
+  • AWS Secrets Manager — stores SSH private keys
+  • (Optional) ACM + ALB — TLS termination
+
+Monthly Cost: ~$30-50
+```
+
 ### Recommended Instance
 
 | Spec | Recommendation |
@@ -14,10 +34,16 @@
 ### Architecture
 
 ```
-[Users] → [ALB/Nginx :443] → [EC2 Instance]
-                                  ├── Nginx (frontend static files)
-                                  ├── Uvicorn (backend API :8000)
-                                  └── SSH → [300+ Linux Servers]
+[Users] → [Nginx :443 (TLS)] → [EC2 Instance]
+                                     ├── Nginx (React frontend)
+                                     ├── Uvicorn (FastAPI backend :8000)
+                                     ├── SQLite (inventory.db)
+                                     ├── Filesystem (snapshots/*.json.gz)
+                                     └── SSH → [300+ Linux Servers]
+
+AWS Services Used:
+  • EC2 — single instance running the application
+  • AWS Secrets Manager — SSH private keys (never on disk)
 ```
 
 ### Deployment Steps

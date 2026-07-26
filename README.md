@@ -20,31 +20,54 @@ A production-ready web application that inventories approximately 300+ Linux ser
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                React Frontend                        │
-│  (Material UI, TypeScript, Chart.js)                │
-└─────────────────────┬───────────────────────────────┘
-                      │ REST API (JSON)
-┌─────────────────────┴───────────────────────────────┐
-│              FastAPI Backend                          │
-│  ┌─────────┐ ┌──────────┐ ┌────────────────────┐   │
-│  │  Auth   │ │Scheduler │ │  Collection Engine  │   │
-│  │  RBAC   │ │APScheduler│ │  20 concurrent SSH │   │
-│  └─────────┘ └──────────┘ └────────────────────┘   │
-│  ┌─────────────────────────────────────────────┐    │
-│  │           Service Layer                      │    │
-│  │  Collection │ ChangeDetection │ Reports      │    │
-│  └─────────────────────────────────────────────┘    │
-│  ┌─────────────────────────────────────────────┐    │
-│  │         Repository Layer (Data Access)       │    │
-│  └─────────────────────────────────────────────┘    │
-└─────────────────────┬───────────────────────────────┘
-           ┌──────────┴──────────┐
-     ┌─────┴─────┐        ┌─────┴─────┐
-     │  SQLite   │        │   Disk    │
-     │ (metadata)│        │(snapshots)│
-     └───────────┘        └───────────┘
+┌──────────────────────────────────────────────────────────────┐
+│                   EC2 Instance (Amazon Linux 2023)             │
+│                   t3.medium · 100 GB gp3                      │
+│                                                               │
+│   ┌───────────────────────────────────────────────────────┐   │
+│   │  Nginx (:80/:443)                                     │   │
+│   │  → Serves React frontend (static files)               │   │
+│   │  → Proxies /api/* to Uvicorn                          │   │
+│   └────────────────────────┬──────────────────────────────┘   │
+│                            │                                   │
+│   ┌────────────────────────┴──────────────────────────────┐   │
+│   │  Uvicorn + FastAPI (:8000)                            │   │
+│   │  → REST APIs (versioned /api/v1/)                     │   │
+│   │  → Authentication & RBAC                              │   │
+│   │  → APScheduler (daily + retry)                        │   │
+│   │  → SSH Collection Engine (20 concurrent sessions)     │   │
+│   │  → Change Detection & Notifications                   │   │
+│   └───────┬──────────────────────────────────┬────────────┘   │
+│           │                                  │                 │
+│   ┌───────┴───────┐              ┌───────────┴────────────┐   │
+│   │   SQLite      │              │   Local Filesystem      │   │
+│   │ (inventory.db)│              │   /storage/snapshots/   │   │
+│   │  • Metadata   │              │   /storage/reports/     │   │
+│   │  • Users      │              │   /logs/                │   │
+│   │  • Audit logs │              │   (compressed JSON)     │   │
+│   └───────────────┘              └────────────────────────┘   │
+│                                                               │
+└───────────────────────────────┬───────────────────────────────┘
+                                │ SSH (port 22)
+                                ▼
+                    ┌───────────────────────┐
+                    │   300+ Linux Servers   │
+                    │   (RHEL, Amazon Linux, │
+                    │    Ubuntu, Rocky, etc.)│
+                    └───────────────────────┘
+
+External Dependency:
+    AWS Secrets Manager → SSH Private Keys
 ```
+
+## AWS Services
+
+| Service | Purpose |
+|---------|---------|
+| **EC2** | Runs the application (single instance) |
+| **AWS Secrets Manager** | Stores SSH private keys securely |
+
+No other AWS services required. No containers, no managed databases, no queues.
 
 ## Key Features
 
@@ -66,9 +89,11 @@ A production-ready web application that inventories approximately 300+ Linux ser
 |-------|-----------|
 | Backend | Python 3.12+, FastAPI, SQLAlchemy, APScheduler, Paramiko |
 | Frontend | React 18, TypeScript, Material UI, Chart.js |
-| Database | SQLite (PostgreSQL-ready) |
+| Database | SQLite (PostgreSQL-ready via config change) |
 | Auth | JWT (local), future: Azure AD, LDAP, AWS SSO |
-| Deployment | Systemd services on EC2, Docker for CI |
+| Secrets | AWS Secrets Manager (SSH keys) |
+| Deployment | systemd services on EC2 (Amazon Linux 2023) |
+| Cost | ~$30-50/month (single EC2 + Secrets Manager) |
 
 ## Project Structure
 
@@ -135,6 +160,17 @@ cd frontend
 npm install
 npm run dev
 ```
+
+## Production Deployment
+
+```bash
+# On Amazon Linux 2023 EC2 instance:
+sudo bash scripts/install.sh
+```
+
+This installs everything: Python venv, dependencies, systemd services, Nginx, log rotation, and backup cron.
+
+**Total AWS cost: ~$30-50/month** (one t3.medium + Secrets Manager)
 
 ## API Documentation
 
