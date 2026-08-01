@@ -4,6 +4,7 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  base: '/Linux-mgmt-compliance-ui/',
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -20,6 +21,6 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false,
   },
 });
