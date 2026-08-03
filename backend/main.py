@@ -19,6 +19,9 @@ from backend.logging.setup import setup_logging
 from backend.scheduler.manager import SchedulerManager
 from backend.settings.config import get_settings
 from backend.security.middleware import SecurityHeadersMiddleware
+from backend.security.rate_limiter import RateLimitMiddleware
+from backend.security.input_validation import RequestSizeLimitMiddleware
+from backend.security.error_handler import register_error_handlers
 
 
 @asynccontextmanager
@@ -96,6 +99,15 @@ def create_application() -> FastAPI:
     
     # Security headers middleware
     app.add_middleware(SecurityHeadersMiddleware)
+    
+    # Rate limiting middleware
+    app.add_middleware(RateLimitMiddleware)
+    
+    # Request body size limit (10 MB)
+    app.add_middleware(RequestSizeLimitMiddleware)
+    
+    # Register secure error handlers (never expose internals)
+    register_error_handlers(app)
     
     # Register API routers
     app.include_router(api_router, prefix="/api/v1")
