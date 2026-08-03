@@ -6,6 +6,55 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [1.1.0] - 2026-07-25
+
+### CMDB Auto-Import & Configuration Overhaul
+
+#### Added: EFS CMDB CSV Auto-Import
+- Reads EC2 CMDB CSV file from EFS mount daily (configurable schedule)
+- Automatically creates new servers from CSV with default credential profile
+- Updates existing servers with latest AWS tag data
+- Deactivates servers removed from CMDB (decommissioned)
+- API endpoints: `GET /cmdb-import/status`, `POST /cmdb-import/trigger`, `GET /cmdb-import/config`
+- Validates CSV file existence, encoding, and column headers before import
+
+#### Added: AWS Tag Fields on Server Model
+- `aws_region` — AWS region (e.g., us-east-1)
+- `aws_account_name` — AWS account/profile name
+- `instance_id` — EC2 instance ID
+- `app_name` — Application name tag
+- `pdo` — PDO tag
+- All fields indexed for fast filtering
+- Included in all reports (CSV, Excel, PDF)
+
+#### Added: Complete Settings/Configuration Tab
+- 13 configuration categories visible in Settings API
+- Application, Server, Security, CORS, Database, SSH, Scheduler, Secrets, Storage, Logging, Notifications, Retention, CMDB Import
+- Sensitive values masked (shown as `********` or `(stored in Secrets Manager)`)
+- Runtime-mutable settings can be changed without restart
+- Non-mutable settings require `.env` update + service restart
+
+#### Added: Configurable CMDB Import Settings
+- `CMDB_IMPORT_ENABLED` — enable/disable auto-import
+- `CMDB_IMPORT_PATH` — EFS mount path to CSV file
+- `CMDB_IMPORT_SCHEDULE_HOUR/MINUTE` — when to run (default 01:00)
+- `CMDB_CSV_DELIMITER` — comma, tab, pipe, etc.
+- `CMDB_CSV_ENCODING` — utf-8, latin-1, etc.
+- `CMDB_CSV_HAS_HEADER` — whether file has header row
+- `CMDB_COL_*` — column name mapping (region, account_name, instance_id, instance_ip, Name, app_name, PDO)
+- `CMDB_DEFAULT_CREDENTIAL_PROFILE` — profile ID for new servers
+- `CMDB_DEFAULT_SSH_PORT` — default SSH port
+
+#### Fixed: Sensitive Value Handling
+- SSH Private Keys → AWS Secrets Manager only (via Credential Profile ARN)
+- SMTP Password → AWS Secrets Manager (referenced by `SMTP_PASSWORD_SECRET_ARN`)
+- JWT Secret Key → AWS Secrets Manager recommended for production
+- Database passwords → N/A for SQLite; Secrets Manager if PostgreSQL
+- No secrets ever stored in SQLite, logs, API responses, or browser
+- `.env.example` updated with clear documentation on what goes where
+
+---
+
 ## [1.0.0] - 2026-07-25
 
 ### Initial Release
