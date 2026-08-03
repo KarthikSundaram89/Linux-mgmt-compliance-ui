@@ -79,6 +79,12 @@ class ServerResponse(BaseModel):
     last_collection_at: Optional[datetime]
     last_collection_status: Optional[str]
     tags: Optional[str]
+    # AWS CMDB fields
+    aws_region: Optional[str] = None
+    aws_account_name: Optional[str] = None
+    instance_id: Optional[str] = None
+    app_name: Optional[str] = None
+    pdo: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 

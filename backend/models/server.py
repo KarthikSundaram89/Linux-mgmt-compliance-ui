@@ -84,6 +84,28 @@ class Server(Base, TimestampMixin, SoftDeleteMixin):
         Text, nullable=True, comment="Comma-separated tags"
     )
     
+    # ─── AWS CMDB Fields (imported from EFS CSV) ───────────────────
+    aws_region: Mapped[Optional[str]] = mapped_column(
+        String(30), nullable=True, index=True,
+        comment="AWS region from CMDB (e.g., us-east-1)"
+    )
+    aws_account_name: Mapped[Optional[str]] = mapped_column(
+        String(100), nullable=True, index=True,
+        comment="AWS account/profile name from CMDB"
+    )
+    instance_id: Mapped[Optional[str]] = mapped_column(
+        String(30), nullable=True, index=True,
+        comment="EC2 instance ID from CMDB (e.g., i-0abc123def)"
+    )
+    app_name: Mapped[Optional[str]] = mapped_column(
+        String(200), nullable=True, index=True,
+        comment="Application name tag from CMDB"
+    )
+    pdo: Mapped[Optional[str]] = mapped_column(
+        String(200), nullable=True, index=True,
+        comment="PDO tag from CMDB"
+    )
+    
     # Relationships
     credential_profile: Mapped["CredentialProfile"] = relationship(
         "CredentialProfile", back_populates="servers", lazy="selectin"

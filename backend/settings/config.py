@@ -142,6 +142,58 @@ class Settings(BaseSettings):
     report_retention_days: int = Field(default=90, description="Days to retain generated reports")
     snapshot_retention_days: int = Field(default=365, description="Days to retain snapshots")
     
+    # ─── CMDB Import (EFS-mounted CSV) ─────────────────────────────
+    cmdb_import_enabled: bool = Field(
+        default=True, description="Enable automatic CMDB CSV import"
+    )
+    cmdb_import_path: str = Field(
+        default="/mnt/efs/cmdb/ec2_inventory.csv",
+        description="Path to the CMDB CSV file on EFS mount",
+    )
+    cmdb_import_schedule_hour: int = Field(
+        default=1, description="Hour to run CMDB import (0-23, before collection)"
+    )
+    cmdb_import_schedule_minute: int = Field(
+        default=0, description="Minute to run CMDB import"
+    )
+    cmdb_csv_delimiter: str = Field(
+        default=",", description="CSV delimiter character"
+    )
+    cmdb_csv_encoding: str = Field(
+        default="utf-8", description="CSV file encoding"
+    )
+    cmdb_csv_has_header: bool = Field(
+        default=True, description="Whether the CSV file has a header row"
+    )
+    # Column mapping: which CSV column maps to which server field
+    cmdb_col_region: str = Field(
+        default="region", description="CSV column name for AWS region"
+    )
+    cmdb_col_account_name: str = Field(
+        default="account_name", description="CSV column name for AWS account/profile"
+    )
+    cmdb_col_instance_id: str = Field(
+        default="instance_id", description="CSV column name for EC2 instance ID"
+    )
+    cmdb_col_instance_ip: str = Field(
+        default="instance_ip", description="CSV column name for instance IP address"
+    )
+    cmdb_col_name: str = Field(
+        default="Name", description="CSV column name for server name tag (used as hostname)"
+    )
+    cmdb_col_app_name: str = Field(
+        default="app_name", description="CSV column name for application name tag"
+    )
+    cmdb_col_pdo: str = Field(
+        default="PDO", description="CSV column name for PDO tag"
+    )
+    cmdb_default_credential_profile: str = Field(
+        default="", description="Default credential profile ID for newly imported servers"
+    )
+    cmdb_default_ssh_port: int = Field(
+        default=22, description="Default SSH port for imported servers"
+    )
+    
     @field_validator("log_level")
     @classmethod
     def validate_log_level(cls, v: str) -> str:

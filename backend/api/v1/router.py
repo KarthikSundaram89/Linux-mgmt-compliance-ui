@@ -26,6 +26,7 @@ from backend.api.v1.endpoints import (
     snapshots,
     system,
     users,
+    cmdb_import,
 )
 
 api_router = APIRouter()
@@ -147,4 +148,11 @@ api_router.include_router(
     users.router,
     prefix="/users",
     tags=["Users"],
+)
+
+# CMDB Import
+api_router.include_router(
+    cmdb_import.router,
+    prefix="/cmdb-import",
+    tags=["CMDB Import"],
 )
